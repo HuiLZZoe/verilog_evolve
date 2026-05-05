@@ -1,0 +1,24 @@
+{
+  "task_id": "quantized_gemm_pe",
+  "description": "Quantized GEMM processing element for LLM inference. Prefer mixed INT4/INT8 datapaths, bounded multiplier usage, and simple pipelined MAC structure.",
+  "constraints": {
+    "preferred_bitwidths": [4, 8, 16, 32],
+    "max_multipliers": 2,
+    "target_mac_lanes": 1,
+    "area_delay_normalizer": 100.0,
+    "target": "low-area timing-friendly quantized MAC/PE"
+  },
+  "metrics": {
+    "downstream_score": "lower is better; combines multiplier budget, preferred bitwidth detection, Yosys JSON netlist structure, and pipeline hints",
+    "multiplier_count": "Yosys JSON multiplier cell count when available, otherwise number of '*' operators in generated RTL",
+    "preferred_bitwidth_hits": "count of preferred quantized bitwidth patterns detected",
+    "pipeline_register_blocks": "posedge always blocks as a simple source-level pipeline proxy",
+    "mul_cells": "multiplier-like cells parsed from Yosys JSON netlist",
+    "add_cells": "adder/subtractor-like cells parsed from Yosys JSON netlist",
+    "dff_cells": "flip-flop-like cells parsed from Yosys JSON netlist",
+    "mux_cells": "mux-like cells parsed from Yosys JSON netlist",
+    "estimated_mac_lanes": "min(mul_cells, add_cells) as a GEMM/MAC lane proxy",
+    "pipeline_depth_proxy": "DFF-to-MAC-lane ratio as a lightweight pipeline depth proxy",
+    "area_delay_product_proxy": "weighted area proxy times structural delay proxy from Yosys JSON cells"
+  }
+}

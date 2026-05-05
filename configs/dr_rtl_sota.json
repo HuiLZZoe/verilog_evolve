@@ -1,0 +1,27 @@
+{
+  "mode": "dr_rtl_sota",
+  "required_evaluators": ["functional", "eda_dc_sec"],
+  "hard_gates": ["sec_passed"],
+  "dr_rtl_weights": {
+    "wns": 0.5,
+    "tns": 0.35,
+    "area": 0.15
+  },
+  "baseline_metrics": {
+    "wns": null,
+    "tns": null,
+    "area": null
+  },
+  "area_penalty_threshold": 0.1,
+  "area_penalty": 0.5,
+  "penalties": {
+    "mismatch_base": 1.0,
+    "compile_error": 2.3,
+    "syntax_error": 2.6,
+    "timeout": 3.0,
+    "unknown_failure": 2.0,
+    "optional_evaluator_fail": 0.2,
+    "sec_failure": 1000.0,
+    "missing_baseline": 10.0
+  }
+}

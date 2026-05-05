@@ -1,0 +1,27 @@
+{
+  "required_evaluators": ["functional", "yosys", "abc", "downstream"],
+  "weights": {
+    "cell_count": 0.15,
+    "wire_count": 0.05,
+    "wire_bits": 0.05,
+    "abc_delay_proxy": 0.35,
+    "downstream_score": 0.5,
+    "mul_cells": 0.05,
+    "add_cells": 0.03,
+    "dff_cells": 0.02,
+    "mux_cells": 0.02,
+    "area_delay_product_proxy": 0.1
+  },
+  "normalizers": {
+    "cell_count": 1000.0,
+    "wire_count": 1000.0,
+    "wire_bits": 10000.0,
+    "abc_delay_proxy": 10.0,
+    "downstream_score": 10.0,
+    "mul_cells": 16.0,
+    "add_cells": 32.0,
+    "dff_cells": 128.0,
+    "mux_cells": 64.0,
+    "area_delay_product_proxy": 500.0
+  }
+}

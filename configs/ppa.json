@@ -1,0 +1,15 @@
+{
+  "required_evaluators": ["functional", "yosys"],
+  "weights": {
+    "cell_count": 0.5,
+    "wire_count": 0.1,
+    "wire_bits": 0.1,
+    "abc_delay_proxy": 0.0,
+    "downstream_score": 0.0
+  },
+  "normalizers": {
+    "cell_count": 1000.0,
+    "wire_count": 1000.0,
+    "wire_bits": 10000.0
+  }
+}

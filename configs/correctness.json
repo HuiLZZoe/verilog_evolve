@@ -1,0 +1,10 @@
+{
+  "required_evaluators": ["functional"],
+  "weights": {
+    "cell_count": 0.0,
+    "wire_count": 0.0,
+    "wire_bits": 0.0,
+    "abc_delay_proxy": 0.0,
+    "downstream_score": 0.0
+  }
+}
