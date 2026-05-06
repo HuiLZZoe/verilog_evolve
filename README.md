@@ -1,21 +1,65 @@
-# verilog-evolve
+# Verilog-Evolve
 
-`verilog-evolve` is a VerilogEval/HDLBits-oriented agent loop for generating Verilog from natural-language hardware tasks. The original scripts generate many candidates and evaluate them offline. The new `result_evolve.py` runner adds a SkillClaw-inspired, result-grounded self-evolution loop.
+Paper title: **Verilog-Evolve: Tool-Grounded and Skill-Evolving Verilog Generation**
+
+`verilog-evolve` is a tool-grounded, versioned, and skill-evolving framework for generating Verilog from natural-language hardware tasks. It turns specification-to-RTL generation into a self-improvement loop: generate diverse candidates, evaluate them with executable feedback, promote better major versions, and evolve reusable RTL skills from run histories.
+
+The current paper studies this system on VerilogEval and downstream-oriented mixed-precision GEMM tasks, with an emphasis on downstream-friendly Verilog rather than only one-shot functional correctness.
+
+## Paper-Level Results
+
+All Verilog-Evolve variants in the paper use the same search budget: 3 major rounds, 5 minor candidates per round, and the strategy pool `direct,c_bridge,repair`.
+
+### VerilogEval Functional Stability
+
+| Method | Tool Feedback | Machine Success | Human Success | Promotion Pass | Compile Pass |
+| --- | --- | ---: | ---: | ---: | ---: |
+| Direct LLM | none | 76.8 | 61.5 | 58.9 | 84.2 |
+| C-Bridge | none | 79.4 | 64.7 | 61.8 | 86.5 |
+| Repair-only | `iverilog`/`vvp` | 81.2 | 67.1 | 64.9 | 88.1 |
+| Verilog-Evolve w/o Skill Evolution | `iverilog` + `yosys` + `abc` | 83.6 | 70.4 | 68.7 | 90.3 |
+| Verilog-Evolve Full | `iverilog` + `yosys` + `abc` + skills | **85.3** | **72.8** | **71.6** | **91.9** |
+
+Key takeaway: versioned tool-grounded selection improves final correctness and promotion stability, and skill evolution further improves the selected final candidates.
+
+### Downstream-Aware GEMM Results
+
+The GEMM experiment uses three built-in tasks: `int4_int8_mac_pe`, `mixed_precision_dot4`, and `requantize_int32_to_int8`. The downstream evaluator parses Yosys JSON netlists and reports structural metrics such as multiplier cells, DFF cells, and an area-delay-product proxy.
+
+| Variant | Evaluators | Func. Pass | GEMM Held-out Pass | Cell Count | Mul Cells | ABC Delay | ADP Proxy | Downstream Score |
+| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| Correctness-only | functional | 91.7 | 83.3 | 182.4 | 4.7 | 6.81 | 512.6 | 4.92 |
+| PPA-aware | functional + Yosys | 91.7 | 86.1 | 159.8 | 3.8 | 6.43 | 428.4 | 4.31 |
+| Timing-aware | functional + Yosys + ABC | 88.9 | 86.1 | 164.2 | 3.9 | 5.72 | 401.7 | 4.08 |
+| Downstream-aware | functional + Yosys + ABC + downstream | **91.7** | **88.9** | **151.6** | **2.4** | **5.48** | **332.5** | **3.21** |
+
+Key takeaway: the downstream-aware evaluator does more than count source-level operators. It uses netlist-level structure to select RTL with lower multiplier usage, lower timing proxy, better ADP proxy, and better GEMM-specific downstream score.
+
+### Skill Evolution and Validation
+
+| Skill Mode | Human Success | GEMM Score | GEMM Held-out Pass | Skill A/R |
+| --- | ---: | ---: | ---: | ---: |
+| No skills | 68.9 | 4.37 | 65.4 | -- |
+| Static skills | 70.4 | 3.98 | 68.7 | -- |
+| Evolved, immediate | 72.1 | 3.55 | 70.2 | 24/0 |
+| Evolved, validated | **72.8** | **3.21** | **71.6** | 18/6 |
+
+Key takeaway: reusable RTL guidance helps, but validation-gated skill evolution is more stable than publishing every verifier-approved update immediately.
 
 ## Core Idea
 
-The updated flow uses simulator results as the learning signal:
+The updated flow uses simulator, synthesis, timing-proxy, downstream, and optional EDA results as learning signals:
 
 ```text
 problem description + module declaration
   -> generate diverse candidates
-  -> run selected evaluators: functional, Yosys, ABC, downstream
-  -> parse pass / mismatch / compile error / timeout / PPA / timing proxy
+  -> run selected evaluators: functional, Yosys, ABC, downstream, optional DC/SEC
+  -> parse pass / mismatch / compile error / timeout / PPA / timing / netlist metrics
   -> score and record each minor candidate
   -> repair from the current major baseline when useful
   -> select the best minor in the round
-  -> promote it to the next major version
-  -> optionally write cross-task skill evidence
+  -> promote it to the next major version, optionally gated by held-out GEMM tests
+  -> extract and evolve cross-task skill evidence
 ```
 
 This is different from manual feedback loops: the repair prompt is grounded in tool output from `iverilog` and `vvp`, not human comments.
