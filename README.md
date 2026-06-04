@@ -489,3 +489,13 @@ The intended workflow is:
 6. Re-run `--evolve-skills --skill-publish-mode validated` to finalize publish/reject from worker results.
 7. Re-run the benchmark and compare pass rate, downstream score, and promotion stability.
 
+## Citation
+If you use this code in your research, please cite:
+
+```bibtex
+@article{verilogevolve2025,
+  title={Verilog-Evolve: Feedback-Driven and Skill-Evolving Verilog Generation},
+  author={Zehua Pei, Hui-Ling Zhen, Yu Zhang, Sinno Jialin Pan, Mingxuan Yuan, Bei Yu},
+  journal={arXiv:2605.26498},
+  year={2026}
+}
